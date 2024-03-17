@@ -3,9 +3,14 @@ import { onMounted } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 
 import Web3Service from './web3Service.js'
-
+import tokenABI from './assets/ABI/tokenABI.json'
 onMounted(async () => {
   await Web3Service.connectMetamask()
+  //Web3Service.web3.eth.getBalance(Web3Service.account).then(console.log)
+  // sample only
+  const tokenInst = new Web3Service.web3.eth.Contract(tokenABI, Web3Service.tokenContractAddress)
+  const balance = await tokenInst.methods.balanceOf(Web3Service.account).call()
+  console.log('balance: ', balance)
 })
 </script>
 
