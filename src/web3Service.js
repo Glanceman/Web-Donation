@@ -2,7 +2,7 @@ import { Web3 } from 'web3'
 class Web3Service {
   //todo, add more functions
   static web3
-  static account
+  static account = ''
   static tokenContractAddress = '0x76DD57250854D125a34821f91C4D4026ACFaf802'
   static storageContractAddress = '0xcb704fC51Cf23d33335929DE0838aCf3031E272F'
   constructor() {
@@ -37,9 +37,10 @@ class Web3Service {
 
       //show the first connected account in the react page
       Web3Service.account = accounts[0]
-      console.log('account: ', this.account)
+      return true
     } else {
       alert('Please download metamask')
+      return false
     }
   }
 
@@ -48,6 +49,7 @@ class Web3Service {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' })
         if (accounts.length > 0) {
+          Web3Service.web3 = new Web3(window.ethereum)
           Web3Service.account = accounts[0]
         } else {
           alert('Please connect to metamask')
