@@ -33,10 +33,9 @@
 </template>
 
 <script>
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterView } from 'vue-router'
 
 import Web3Service from './web3Service.js'
-import tokenABI from './assets/ABI/tokenABI.json'
 import router from './router/index.js'
 
 export default {
@@ -48,25 +47,23 @@ export default {
   },
   methods: {
     async connectToMetaMask() {
-      if (!Web3Service.account.length() === 0) {
+      if (Web3Service.getInstance().account.length > 0) {
+        // already setup connection
+        console.log('already connect')
         return
       }
-      let resp = await Web3Service.connectMetamask()
-      if (resp.result) {
-        this.account = Web3Service.account
+      let resp = await Web3Service.getInstance().connectMetamask()
+      console.log(resp)
+      if (resp) {
+        this.account = Web3Service.getInstance().account
       }
     }
   },
   async mounted() {
     this.routes = router.options.routes
-    await Web3Service.getCurrentConnectedAccount()
-    this.account = Web3Service.account
+    await Web3Service.getInstance().getCurrentConnectedAccount()
+    this.account = Web3Service.getInstance().account
     console.log('account', this.account)
-    //Web3Service.web3.eth.getBalance(Web3Service.account).then(console.log)
-    // sample only
-    //const tokenInst = new Web3Service.web3.eth.Contract(tokenABI, Web3Service.tokenContractAddress)
-
-    //const balance = await tokenInst.methods.balanceOf(Web3Service.account).call()
   }
 }
 </script>

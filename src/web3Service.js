@@ -1,73 +1,76 @@
 import { Web3 } from 'web3'
+import storageABI from './assets/ABI/storageABI.json'
+import tokenABI from './assets/ABI/tokenABI.json'
+
 class Web3Service {
   //todo, add more functions
-  static web3
-  static account = ''
   static tokenContractAddress = '0x76DD57250854D125a34821f91C4D4026ACFaf802'
   static storageContractAddress = '0xcb704fC51Cf23d33335929DE0838aCf3031E272F'
+
   constructor() {
-    return Web3Service.createInstance()
+    console.log('create')
+    Web3Service._instance = this
+    this.account = ''
+    this.web3
   }
 
-  static createInstance() {
-    if (Web3Service._instance) {
-      return Web3Service._instance
+  static getInstance() {
+    if (!Web3Service._instance) {
+      Web3Service._instance = new Web3Service('DefaultField1', 'DefaultField2')
     }
-    Web3Service._instance = this
     return Web3Service._instance
   }
 
   //todo
-  static async connectMetamask() {
-    if (!Web3Service._instance) {
-      Web3Service.createInstance()
-    }
-
+  async connectMetamask() {
     //check metamask is installed
     if (window.ethereum) {
       console.log('connect')
       // instantiate Web3 with the injected provider
-      Web3Service.web3 = new Web3(window.ethereum)
+      this.web3 = new Web3(window.ethereum)
 
       //request user to connect accounts (Metamask will prompt)
       await window.ethereum.request({ method: 'eth_requestAccounts' })
 
       //get the connected accounts
-      const accounts = await Web3Service.web3.eth.getAccounts()
+      const accounts = await this.web3.eth.getAccounts()
 
       //show the first connected account in the react page
-      Web3Service.account = accounts[0]
+      this.account = accounts[0]
       return true
-    } else {
-      alert('Please download metamask')
-      return false
     }
+    alert('Please download metamask')
+    return false
   }
 
-  static async getCurrentConnectedAccount() {
+  getStorageContract() {
+    if (!this.storageInst) {
+      this.storageInst = new this.web3.eth.Contract(storageABI, Web3Service.storageContractAddress)
+    }
+    return this.storageInst
+  }
+
+  getTokenContract() {
+    if (!this.tokenInst) {
+      this.tokenInst = new this.web3.eth.Contract(tokenABI, Web3Service.storageContractAddress)
+    }
+    return this.tokenInst
+  }
+
+  async getCurrentConnectedAccount() {
     if (window.ethereum) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' })
         if (accounts.length > 0) {
-          Web3Service.web3 = new Web3(window.ethereum)
-          Web3Service.account = accounts[0]
-        } else {
-          alert('Please connect to metamask')
+          this.web3 = new Web3(window.ethereum)
+          this.account = accounts[0]
+          return true
         }
       } catch (error) {
         console.log(error)
       }
-    } else {
-      alert('Please download metamask')
     }
-  }
-
-  static checkWeb3Connect() {
-    if (window.ethereum) {
-      return true
-    } else {
-      return false
-    }
+    return false
   }
 }
 

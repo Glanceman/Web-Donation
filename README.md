@@ -1,6 +1,6 @@
 # Web-Donation
 
-This template should help get you started developing with Vue 3 in Vite.
+Blockchain repo : https://github.com/Ahuans/Ethereum_Contract/blob/main/contracts/Donate.sol
 
 ## Recommended IDE Setup
 
