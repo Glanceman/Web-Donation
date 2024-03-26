@@ -72,6 +72,12 @@ class Web3Service {
     }
     return false
   }
+
+  async getConnectNetworkBalance(unit = 'ether') {
+    let resp = await this.web3.eth.getBalance(this.account)
+    let balance = this.web3.utils.fromWei(resp, unit)
+    return balance
+  }
 }
 
 export default Web3Service
