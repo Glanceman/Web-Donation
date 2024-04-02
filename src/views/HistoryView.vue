@@ -1,6 +1,6 @@
 <template>
   <el-space fill style="width: 100%" direction="vertical">
-    <el-card v-for="post in fakeposts" shadow="hover">
+    <el-card v-for="post in posts" shadow="hover">
       <template #header>
         <div class="card-header">
           <span>{{ post.name }}</span>
