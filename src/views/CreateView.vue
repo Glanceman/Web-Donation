@@ -1,33 +1,41 @@
 <template>
- <div>
-    <div>
-      <label for="hostname">Hostname:</label>
-      <input type="text" id="hostname" v-model="hostnameInput" />
-    </div>
-
-    <div>
-      <label for="name">Board Name:</label>
-      <input type="text" id="name" v-model="nameInput" />
-    </div>
-
-    <div>
-      <label for="context">Board Context:</label>
-      <textarea id="context" v-model="contextInput" rows="10" cols="50"></textarea>
-    </div>
-
-    <div>
-      <label for="targetAmount">Target Amount:</label>
-      <input type="number" id="targetAmount" v-model.number="targetAmountInput" />
-    </div>
-
-    <button @click="createPost">Submit</button>
+ <div class="container">
+  <div class="form-group">
+    <label for="hostname">Hostname:</label>
+    <input type="text" id="hostname" v-model="hostnameInput" />
   </div>
+
+  <div class="form-group">
+    <label for="name">Board Name:</label>
+    <input type="text" id="name" v-model="nameInput" />
+  </div>
+
+  <div class="form-group">
+    <label for="context">Board Context:</label>
+    <textarea id="context" v-model="contextInput"  class="custom-textarea"></textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="targetAmount">Target Amount:</label>
+    <input type="number" id="targetAmount" v-model.number="targetAmountInput" />
+  </div>
+
+  <el-button
+  type="primary"
+  @click="createPost"
+  :loading="isSubmitting"
+  >
+  {{ isSubmitting ? 'Submitting...' : 'Submit' }}
+</el-button>
+
+</div>
 </template>
 <script>
 import Web3Service from '@/web3Service'
 export default {
   data() {
     return {
+      isSubmitting: false,
       result:[],
       account: null,
       storageInst: null,
@@ -41,6 +49,8 @@ export default {
   },
   methods: {
     async createPost() {
+      this.isSubmitting = true;
+
       const hostname = this.hostnameInput;
       const name = this.nameInput;
       const context = this.contextInput;
@@ -54,6 +64,7 @@ export default {
         .catch((error) => {
           console.error('Transaction error:', error);
         });
+        this.isSubmitting = false;
     },
     async donate(target_post_id,donor_name,amount,target_address)
     {
@@ -97,4 +108,29 @@ export default {
   }
 }
 </script>
-<style></style>
+<style>
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  width: 100%;
+}
+.form-group input {
+  height: 30px;
+  font-size: 16px;
+}
+.custom-textarea {
+  height: 200px;
+  font-size: 18px;
+}
+
+
+</style>
