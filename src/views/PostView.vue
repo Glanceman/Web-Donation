@@ -1,15 +1,131 @@
 <template>
-  <div>Post</div>
+  <div>
+    <div>
+    <h2 style="text-align: center;">Board</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <span></span> 
+      <el-button @click="approve" style="margin-bottom: 10px" size="medium">Approve</el-button>
+    </div>
+
+    <el-space fill style="width: 100%" direction="vertical" >
+    <el-card v-for="(board, index) in result" :key="index" :style="{ marginBottom: '5px' ,width: '100%'}">
+    <template #header>
+      <div class="Board id:"><span>Board id: {{ board.id }}</span></div>
+    </template>
+
+    <el-descriptions title="Board Infomation" :column="true" class="board-descriptions">
+    <el-descriptions-item label="Host name:">{{ board.hostname }}</el-descriptions-item>
+    <el-descriptions-item label="Board name:">{{ board.name }}</el-descriptions-item>
+    <el-descriptions-item label="Board context:">{{ board.context }}</el-descriptions-item>
+    <el-descriptions-item label="Host address:">{{ board.host }}</el-descriptions-item>
+    <el-descriptions-item label="Target amount:">{{ board.targetAmount }}</el-descriptions-item>
+    </el-descriptions>
+
+
+    <template #footer>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Total Amount: {{ board.totalAmount }}</span>
+        <el-button @click="donate(board.id, board.host)">Donate</el-button>
+    </div>
+    </template>
+
+
+    </el-card>
+    </el-space>
+
+    <el-dialog v-model="showDialog" title="Donate" :visible="showDialog" width="30%">
+      <el-form>
+        <el-form-item label="Donor Name">
+          <el-input v-model="donorName"></el-input>
+        </el-form-item>
+        <el-form-item label="Amount">
+          <el-input v-model.number="amount" type="number"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="showDialog = false">Cancel</el-button>
+        <el-button type="primary" @click="submitDonation">Confirm</el-button>
+      </div>
+    </el-dialog>
+  </div>
+</div>
 </template>
 
 <script>
+import Web3Service from '@/web3Service';
+
 export default {
   data() {
-    return {}
+    return {
+      result: [],
+      account: null,
+      storageInst: null,
+      tokenInst: null,
+      totalNumber: 0,
+      showDialog: false,
+      donorName: '',
+      amount: 0,
+      target_address: '',
+      target_post_id: '',
+    };
   },
-  methods: {},
-  mounted() {}
-}
+
+  methods: {
+    async donate(target_post_id, target_address) {
+      this.target_post_id = target_post_id;
+      this.target_address = target_address;
+      this.showDialog = true;
+    },
+
+    async submitDonation() {
+    try {
+    await this.tokenInst.methods.transferFrom(this.account, this.target_address, this.amount)
+      .send({ from: this.account });
+
+    await this.storageInst.methods.donate(this.target_post_id, this.donorName, this.account, this.amount)
+      .send({ from: this.account });
+
+    this.showDialog = false;
+
+    // update totalAmount value
+    const boardIndex = this.result.findIndex(board => board.id === this.target_post_id);
+    if (boardIndex !== -1) {
+      this.result[boardIndex].totalAmount += this.amount;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+  return true;
+},
+
+    async approve() {
+      await this.tokenInst.methods.approve(this.account, this.totalNumber)
+        .send({ from: this.account })
+        .then((receipt) => {
+          console.log('Transaction receipt:', receipt);
+        })
+        .catch((error) => {
+          console.error('Transaction error:', error);
+          return false;
+        });
+      return true;
+    },
+  },
+
+  async mounted() {
+    // get web3 instance
+    await Web3Service.getInstance().getCurrentConnectedAccount();
+    this.account = Web3Service.getInstance().account;
+    this.storageInst = Web3Service.getInstance().getStorageContract();
+    this.tokenInst = Web3Service.getInstance().getTokenContract();
+    this.result = await this.storageInst.methods.getAllBoardsUnExpir().call();
+    console.log(this.result);
+  },
+};
 </script>
 
-<style></style>
+<style>
+
+
+</style>
