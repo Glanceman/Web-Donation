@@ -12,10 +12,18 @@
         <el-descriptions-item label="Host address">{{ post.host }}</el-descriptions-item>
         <el-descriptions-item label="Target amount">{{ post.targetAmount }}</el-descriptions-item>
       </el-descriptions>
-      <template #footer>Total Amount: {{ post.totalAmount }}</template>
-      <el-button type="primary" @click="createPost" :loading="isProcessing">
-        {{ isProcessing ? 'Processing...' : 'Donate' }}
-      </el-button>
+      <template #footer>
+        <el-row :gutter="20" justify="space-between" align="middle">
+          <el-col :span="16"
+            ><div>Total Amount: {{ post.totalAmount }}</div></el-col
+          >
+          <el-col :span="8"
+            ><el-button type="primary" @click="() => processDonation(post)" :loading="isProcessing">
+              {{ isProcessing ? 'Processing...' : 'Donate' }}
+            </el-button></el-col
+          >
+        </el-row>
+      </template>
     </el-card>
   </el-space>
 </template>
@@ -34,6 +42,14 @@ export default {
     }
   },
   methods: {
+    async processDonation(post) {
+      // !!! Ref only, workflow you should open a menu for user to enter amount and then use this function
+      console.log('Donate')
+      console.log(post)
+      // approve
+      // donate
+    },
+
     async donate(target_post_id, donor_name, amount, target_address) {
       this.isProcessing = true
       try {
