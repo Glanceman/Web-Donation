@@ -21,8 +21,11 @@ import Web3Service from '../web3Service.js'
 export default {
   data() {
     return {
+      account: null,
       posts: [],
-      storageInst: null,
+      storageInst: null
+
+      /*
       fakeposts: [
         // will be deleted later
         {
@@ -46,6 +49,7 @@ export default {
           expire: true
         }
       ]
+      */
     }
   },
   methods: {},
@@ -53,7 +57,8 @@ export default {
   async mounted() {
     await Web3Service.getInstance().getCurrentConnectedAccount()
     this.storageInst = Web3Service.getInstance().getStorageContract()
-    this.posts = await this.storageInst.methods.getAllBoardsExpir().call()
+    this.account = Web3Service.getInstance().account
+    this.posts = await this.storageInst.methods.getBoardsByAddr(this.account).call()
     console.log('boards: ', this.posts)
   }
 }
