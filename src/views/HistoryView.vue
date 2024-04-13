@@ -22,7 +22,7 @@
               post.targetAmount
             }}</el-descriptions-item>
           </el-descriptions>
-          <template #footer>Total Amount: {{ post.totalAmount }}</template>
+          <template #footer>Total Amount: {{ post.totalAmount }} PPC</template>
         </el-card>
       </template>
       <template v-if="tabPosition === 'donate'">
@@ -35,7 +35,7 @@
               record.donator_addr
             }}</el-descriptions-item>
           </el-descriptions>
-          <template #footer>Donated Amount: {{ record.Amount }}</template>
+          <template #footer>Donated Amount: {{ record.amount }} PPC</template>
         </el-card>
       </template>
     </el-space>

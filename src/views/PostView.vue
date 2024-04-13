@@ -23,14 +23,14 @@
             <el-descriptions-item label="Board name:">{{ board.name }}</el-descriptions-item>
             <el-descriptions-item label="Board context:">{{ board.context }}</el-descriptions-item>
             <el-descriptions-item label="Host address:">{{ board.host }}</el-descriptions-item>
-            <el-descriptions-item label="Target amount:">{{
-              board.targetAmount
-            }}</el-descriptions-item>
+            <el-descriptions-item label="Target amount:"
+              >{{ board.targetAmount }} PPC
+            </el-descriptions-item>
           </el-descriptions>
 
           <template #footer>
             <div style="display: flex; justify-content: space-between; align-items: center">
-              <span>Total Amount: {{ board.totalAmount }}</span>
+              <span>Total Amount: {{ board.totalAmount }} PPC</span>
               <el-button @click="openDonationPanel(board)">Donate</el-button>
             </div>
           </template>
