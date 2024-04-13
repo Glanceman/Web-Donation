@@ -1,31 +1,59 @@
 <template>
-  <el-space fill style="width: 100%" direction="vertical">
-    <el-card v-for="post in posts" shadow="hover">
-      <template #header>
-        <div class="card-header">
-          <span>{{ post.name }}</span>
+  <div>
+    <div>
+      <h2 style="text-align: center">Board</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <span></span>
+        <el-button @click="approve" style="margin-bottom: 10px" size="medium">Approve</el-button>
+      </div>
+
+      <el-space fill style="width: 100%" direction="vertical">
+        <el-card
+          v-for="(board, index) in result"
+          :key="index"
+          :style="{ marginBottom: '5px', width: '100%' }"
+        >
+          <template #header>
+            <div class="Board id:">
+              <span>Board id: {{ board.id }}</span>
+            </div>
+          </template>
+
+          <el-descriptions title="Board Infomation" :column="true" class="board-descriptions">
+            <el-descriptions-item label="Host name:">{{ board.hostname }}</el-descriptions-item>
+            <el-descriptions-item label="Board name:">{{ board.name }}</el-descriptions-item>
+            <el-descriptions-item label="Board context:">{{ board.context }}</el-descriptions-item>
+            <el-descriptions-item label="Host address:">{{ board.host }}</el-descriptions-item>
+            <el-descriptions-item label="Target amount:">{{
+              board.targetAmount
+            }}</el-descriptions-item>
+          </el-descriptions>
+
+          <template #footer>
+            <div style="display: flex; justify-content: space-between; align-items: center">
+              <span>Total Amount: {{ board.totalAmount }}</span>
+              <el-button @click="donate(board.id, board.host)">Donate</el-button>
+            </div>
+          </template>
+        </el-card>
+      </el-space>
+
+      <el-dialog v-model="showDialog" title="Donate" :visible="showDialog" width="30%">
+        <el-form>
+          <el-form-item label="Donor Name">
+            <el-input v-model="donorName"></el-input>
+          </el-form-item>
+          <el-form-item label="Amount">
+            <el-input v-model.number="amount" type="number"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="showDialog = false">Cancel</el-button>
+          <el-button type="primary" @click="submitDonation">Confirm</el-button>
         </div>
-      </template>
-      <p>{{ post.context }}</p>
-      <el-descriptions title="User Info">
-        <el-descriptions-item label="Host name">{{ post.hostname }}</el-descriptions-item>
-        <el-descriptions-item label="Host address">{{ post.host }}</el-descriptions-item>
-        <el-descriptions-item label="Target amount">{{ post.targetAmount }}</el-descriptions-item>
-      </el-descriptions>
-      <template #footer>
-        <el-row :gutter="20" justify="space-between" align="middle">
-          <el-col :span="16"
-            ><div>Total Amount: {{ post.totalAmount }}</div></el-col
-          >
-          <el-col :span="8"
-            ><el-button type="primary" @click="() => processDonation(post)" :loading="isProcessing">
-              {{ isProcessing ? 'Processing...' : 'Donate' }}
-            </el-button></el-col
-          >
-        </el-row>
-      </template>
-    </el-card>
-  </el-space>
+      </el-dialog>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -34,42 +62,53 @@ import Web3Service from '@/web3Service'
 export default {
   data() {
     return {
-      posts: [],
+      result: [],
       account: null,
       storageInst: null,
       tokenInst: null,
-      isProcessing: false
+      totalNumber: 0,
+      showDialog: false,
+      donorName: '',
+      amount: 0,
+      target_address: '',
+      target_post_id: ''
     }
   },
+
   methods: {
-    async processDonation(post) {
-      // !!! Ref only, workflow you should open a menu for user to enter amount and then use this function
-      console.log('Donate')
-      console.log(post)
-      // approve
-      // donate
+    async donate(target_post_id, target_address) {
+      this.target_post_id = target_post_id
+      this.target_address = target_address
+      this.showDialog = true
     },
 
-    async donate(target_post_id, donor_name, amount, target_address) {
-      this.isProcessing = true
+    async submitDonation() {
       try {
         await this.tokenInst.methods
-          .transferFrom(this.account, target_address, amount)
+          .transferFrom(this.account, this.target_address, this.amount)
           .send({ from: this.account })
+
         await this.storageInst.methods
-          .donate(target_post_id, donor_name, this.account, amount)
+          .donate(this.target_post_id, this.donorName, this.account, this.amount)
           .send({ from: this.account })
+
+        this.showDialog = false
+
+        // update totalAmount value
+        const boardIndex = this.result.findIndex((board) => board.id === this.target_post_id)
+        if (boardIndex !== -1) {
+          this.result[boardIndex].totalAmount += this.amount
+        }
       } catch (error) {
         console.log(error)
-        this.isProcessing = false
         return false
       }
-      this.isProcessing = false
       return true
     },
-    async approve(total_number) {
+
+    async approve() {
       await this.tokenInst.methods
-        .approve(this.account, total_number)
+        .approve(this.account, this.totalNumber)
         .send({ from: this.account })
         .then((receipt) => {
           console.log('Transaction receipt:', receipt)
@@ -81,13 +120,15 @@ export default {
       return true
     }
   },
+
   async mounted() {
+    // get web3 instance
     await Web3Service.getInstance().getCurrentConnectedAccount()
     this.account = Web3Service.getInstance().account
     this.storageInst = Web3Service.getInstance().getStorageContract()
     this.tokenInst = Web3Service.getInstance().getTokenContract()
-
-    this.posts = await this.storageInst.methods.getAllBoardsUnExpir().call()
+    this.result = await this.storageInst.methods.getAllBoardsUnExpir().call()
+    console.log(this.result)
   }
 }
 </script>
