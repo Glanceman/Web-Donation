@@ -52,7 +52,7 @@ class Web3Service {
 
   getTokenContract() {
     if (!this.tokenInst) {
-      this.tokenInst = new this.web3.eth.Contract(tokenABI, Web3Service.storageContractAddress)
+      this.tokenInst = new this.web3.eth.Contract(tokenABI, Web3Service.tokenContractAddress)
     }
     return this.tokenInst
   }

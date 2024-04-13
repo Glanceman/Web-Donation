@@ -86,7 +86,7 @@ export default {
       //make approval
       console.log(this.target_board.host)
       console.log(this.amount)
-      let value = Web3Service.getInstance().web3.utils.toWei(this.amount, 'ether')
+      let value = this.amount * Math.pow(10, 18)
       console.log(value)
       let approveMethod = this.tokenInst.methods.approve(this.target_board.host, value)
 
@@ -102,13 +102,14 @@ export default {
 
       try {
         await this.tokenInst.methods
-          .transferFrom(this.account, this.target_address, value)
+          .transferFrom(this.account, this.target_board.host, value)
           .send({ from: this.account })
+        console.log('transfer success')
 
         await this.storageInst.methods
           .donate(this.target_post_id, this.donorName, this.account, this.amount)
           .send({ from: this.account })
-
+        console.log('donate success')
         this.showDialog = false
 
         // update totalAmount value
@@ -118,8 +119,10 @@ export default {
         }
       } catch (error) {
         console.log(error)
+        console.log('Donate Fail')
         return false
       }
+      console.log('Donate Success')
       return true
     },
 
