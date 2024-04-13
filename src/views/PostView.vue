@@ -4,7 +4,6 @@
       <h2 style="text-align: center">Board</h2>
       <div style="display: flex; justify-content: space-between; align-items: center">
         <span></span>
-        <el-button @click="approve" style="margin-bottom: 10px" disabled>Approve</el-button>
       </div>
 
       <el-space fill style="width: 100%" direction="vertical">
@@ -15,7 +14,7 @@
         >
           <template #header>
             <div class="Board id:">
-              <span>Board id: {{ board.id }}</span>
+              <span>Board ID: {{ board.id }}</span>
             </div>
           </template>
 
@@ -88,7 +87,7 @@ export default {
       console.log(this.amount)
       let value = this.amount * Math.pow(10, 18)
       console.log(value)
-      let approveMethod = this.tokenInst.methods.approve(this.target_board.host, value)
+      let approveMethod = this.tokenInst.methods.approve(this.account, value)
 
       await approveMethod
         .send({ from: this.account })
@@ -107,7 +106,7 @@ export default {
         console.log('transfer success')
 
         await this.storageInst.methods
-          .donate(this.target_post_id, this.donorName, this.account, this.amount)
+          .donate(this.target_board.id, this.donorName, this.account, this.amount)
           .send({ from: this.account })
         console.log('donate success')
         this.showDialog = false
