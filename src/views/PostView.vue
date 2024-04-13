@@ -4,7 +4,7 @@
       <h2 style="text-align: center">Board</h2>
       <div style="display: flex; justify-content: space-between; align-items: center">
         <span></span>
-        <el-button @click="approve" style="margin-bottom: 10px" size="medium">Approve</el-button>
+        <el-button @click="approve" style="margin-bottom: 10px" disabled>Approve</el-button>
       </div>
 
       <el-space fill style="width: 100%" direction="vertical">
@@ -19,7 +19,7 @@
             </div>
           </template>
 
-          <el-descriptions title="Board Infomation" :column="true" class="board-descriptions">
+          <el-descriptions title="Board Infomation" :column="1" class="board-descriptions">
             <el-descriptions-item label="Host name:">{{ board.hostname }}</el-descriptions-item>
             <el-descriptions-item label="Board name:">{{ board.name }}</el-descriptions-item>
             <el-descriptions-item label="Board context:">{{ board.context }}</el-descriptions-item>
@@ -32,7 +32,7 @@
           <template #footer>
             <div style="display: flex; justify-content: space-between; align-items: center">
               <span>Total Amount: {{ board.totalAmount }}</span>
-              <el-button @click="donate(board.id, board.host)">Donate</el-button>
+              <el-button @click="openDonationPanel(board)">Donate</el-button>
             </div>
           </template>
         </el-card>
@@ -71,21 +71,38 @@ export default {
       donorName: '',
       amount: 0,
       target_address: '',
-      target_post_id: ''
+      target_post_id: '',
+      target_board: null
     }
   },
 
   methods: {
-    async donate(target_post_id, target_address) {
-      this.target_post_id = target_post_id
-      this.target_address = target_address
+    async openDonationPanel(board) {
+      this.target_board = board
       this.showDialog = true
     },
 
     async submitDonation() {
+      //make approval
+      console.log(this.target_board.host)
+      console.log(this.amount)
+      let value = Web3Service.getInstance().web3.utils.toWei(this.amount, 'ether')
+      console.log(value)
+      let approveMethod = this.tokenInst.methods.approve(this.target_board.host, value)
+
+      await approveMethod
+        .send({ from: this.account })
+        .then((receipt) => {
+          console.log('Transaction receipt:', receipt)
+        })
+        .catch((error) => {
+          console.error('Transaction error:', error)
+          return false
+        })
+
       try {
         await this.tokenInst.methods
-          .transferFrom(this.account, this.target_address, this.amount)
+          .transferFrom(this.account, this.target_address, value)
           .send({ from: this.account })
 
         await this.storageInst.methods
