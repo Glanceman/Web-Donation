@@ -1,6 +1,16 @@
 # Web-Donation
 
-Blockchain repo : https://github.com/Ahuans/Ethereum_Contract/blob/main/contracts/Donate.sol
+Website : [https://glanceman.github.io/Web-Donation/](https://glanceman.github.io/Web-Donation/)
+
+Blockchain repo : https://github.com/Ahuans/Ethereum_Contract/
+
+## Prerequisite
+
+Install metamask addon onto the browser
+
+Switch network to test network (Sepolia)
+
+In this project, we will use [PPC](https://github.com/Ahuans/Ethereum_Contract/blob/main/contracts/Token.sol) which is made by us
 
 ## Recommended IDE Setup
 
