@@ -42,7 +42,7 @@
   </div>
 </template>
 <script>
-import Web3Service from '../web3Service.js'
+import Web3Service from '@/web3Service'
 export default {
   data() {
     return {

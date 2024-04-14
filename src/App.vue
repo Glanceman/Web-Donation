@@ -35,7 +35,7 @@
 <script>
 import { RouterView } from 'vue-router'
 
-import Web3Service from './web3Service.js'
+import Web3Service from './web3Service'
 import router from './router/index.js'
 
 export default {
