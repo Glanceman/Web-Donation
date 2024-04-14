@@ -5,6 +5,7 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "/Web-Donation/", /* This only for github page repo name*/
   plugins: [
     vue(),
   ],
