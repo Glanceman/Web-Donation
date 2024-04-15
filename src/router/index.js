@@ -9,7 +9,8 @@ const router = createRouter({
     {
       path: '/',
       name: 'Post',
-      component: PostView
+      component: PostView,
+      props: true
     },
     {
       path: '/create',

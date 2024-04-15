@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" v-show="account !== ''">
     <div class="form-group">
       <label for="hostname">Hostname:</label>
       <input type="text" id="hostname" v-model="hostnameInput" />
@@ -28,11 +28,14 @@
 <script>
 import Web3Service from '@/web3Service'
 export default {
+  props: {
+    account: String
+  },
   data() {
     return {
       isSubmitting: false,
       result: [],
-      account: null,
+      /*account: null,*/
       storageInst: null,
       tokenInst: null,
 
@@ -51,17 +54,16 @@ export default {
       const context = this.contextInput
       const targetAmount = this.targetAmountInput
 
-      this.storageInst.methods
-        .createBoard(hostname, this.account, name, context, targetAmount)
-        .send({ from: this.account })
-        .then((receipt) => {
-          console.log('Transaction receipt:', receipt)
-        })
-        .catch((error) => {
-          console.error('Transaction error:', error)
-        })
+      try {
+        let resp = await this.storageInst.methods
+          .createBoard(hostname, this.account, name, context, targetAmount)
+          .send({ from: this.account })
+      } catch (error) {
+        console.log(error)
+      }
       this.isSubmitting = false
     },
+
     async donate(target_post_id, donor_name, amount, target_address) {
       try {
         await this.tokenInst.methods
@@ -91,15 +93,30 @@ export default {
     }
   },
 
+  watch: {
+    async account(newVal, oldVal) {
+      console.log('account change:', newVal)
+      if (newVal === '') {
+        this.storageInst = null
+        this.tokenInst = null
+        return
+      }
+      this.storageInst = Web3Service.getInstance().getStorageContract()
+      this.tokenInst = Web3Service.getInstance().getTokenContract()
+    }
+  },
+
   async mounted() {
     //get web3 instance
-    await Web3Service.getInstance().getCurrentConnectedAccount()
-    this.account = Web3Service.getInstance().account
-    this.storageInst = Web3Service.getInstance().getStorageContract()
-    this.tokenInst = Web3Service.getInstance().getTokenContract()
+    // await Web3Service.getInstance().getCurrentConnectedAccount()
+    // this.account = Web3Service.getInstance().account
+    if (this.account !== '') {
+      this.storageInst = Web3Service.getInstance().getStorageContract()
+      this.tokenInst = Web3Service.getInstance().getTokenContract()
+    }
 
-    this.result = await this.storageInst.methods.getAllBoardsUnExpir().call()
-    console.log(this.result)
+    // this.result = await this.storageInst.methods.getAllBoardsUnExpir().call()
+    // console.log(this.result)
   }
 }
 </script>

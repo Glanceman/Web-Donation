@@ -26,7 +26,7 @@
       </el-header>
 
       <el-main>
-        <RouterView />
+        <RouterView :account="account" />
       </el-main>
     </el-container>
   </div>
@@ -34,7 +34,6 @@
 
 <script>
 import { RouterView } from 'vue-router'
-
 import Web3Service from './web3Service'
 import router from './router/index.js'
 
@@ -56,6 +55,18 @@ export default {
       console.log(resp)
       if (resp) {
         this.account = Web3Service.getInstance().account
+        // add eventlistener
+        if (this.account !== '') {
+          Web3Service.getInstance().web3.provider.on('accountsChanged', (ac) => {
+            console.log('accountChange', ac)
+            if (ac.length == 0) {
+              Web3Service.getInstance().account = ''
+            } else {
+              Web3Service.getInstance().account = ac[0]
+            }
+            this.account = Web3Service.getInstance().account
+          })
+        }
       }
     }
   },
@@ -63,6 +74,18 @@ export default {
     this.routes = router.options.routes
     await Web3Service.getInstance().getCurrentConnectedAccount()
     this.account = Web3Service.getInstance().account
+    // add eventlistener
+    if (this.account !== '') {
+      Web3Service.getInstance().web3.provider.on('accountsChanged', (ac) => {
+        console.log('accountChange', ac)
+        if (ac.length == 0) {
+          Web3Service.getInstance().account = ''
+        } else {
+          Web3Service.getInstance().account = ac[0]
+        }
+        this.account = Web3Service.getInstance().account
+      })
+    }
     console.log('account', this.account)
   }
 }

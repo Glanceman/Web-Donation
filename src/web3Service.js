@@ -11,12 +11,12 @@ class Web3Service {
     console.log('create')
     Web3Service._instance = this
     this.account = ''
-    this.web3
+    this.web3 == new Web3(window.ethereum)
   }
 
   static getInstance() {
     if (!Web3Service._instance) {
-      Web3Service._instance = new Web3Service('DefaultField1', 'DefaultField2')
+      Web3Service._instance = new Web3Service()
     }
     return Web3Service._instance
   }

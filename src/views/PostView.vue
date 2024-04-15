@@ -11,6 +11,7 @@
           v-for="(board, index) in result"
           :key="index"
           :style="{ marginBottom: '5px', width: '100%' }"
+          shadow="hover"
         >
           <template #header>
             <div class="Board id:">
@@ -48,7 +49,9 @@
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="showDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="submitDonation">Confirm</el-button>
+          <el-button type="primary" @click="submitDonation" :loading="isProcessing">{{
+            isProcessing == true ? 'Processing' : 'Comfirm'
+          }}</el-button>
         </div>
       </el-dialog>
     </div>
@@ -59,10 +62,13 @@
 import Web3Service from '@/web3Service'
 
 export default {
+  props: {
+    account: String
+  },
   data() {
     return {
       result: [],
-      account: null,
+      /*account: null,*/
       storageInst: null,
       tokenInst: null,
       totalNumber: 0,
@@ -71,10 +77,24 @@ export default {
       amount: 0,
       target_address: '',
       target_post_id: '',
-      target_board: null
+      target_board: null,
+      isProcessing: false
     }
   },
-
+  watch: {
+    async account(newVal, oldVal) {
+      console.log('account change:', newVal)
+      if (newVal === '') {
+        this.storageInst = null
+        this.tokenInst = null
+        this.result = []
+        return
+      }
+      this.storageInst = Web3Service.getInstance().getStorageContract()
+      this.tokenInst = Web3Service.getInstance().getTokenContract()
+      this.result = await this.storageInst.methods.getAllBoardsUnExpir().call()
+    }
+  },
   methods: {
     async openDonationPanel(board) {
       this.target_board = board
@@ -83,6 +103,7 @@ export default {
 
     async submitDonation() {
       //make approval
+      this.isProcessing = true
       console.log(this.target_board.host)
       console.log(this.amount)
       let value = this.amount * Math.pow(10, 18)
@@ -110,12 +131,13 @@ export default {
           .send({ from: this.account })
         console.log('donate success')
         this.showDialog = false
-
+        this.isProcessing = false
         // update totalAmount value
-        const boardIndex = this.result.findIndex((board) => board.id === this.target_post_id)
-        if (boardIndex !== -1) {
-          this.result[boardIndex].totalAmount += this.amount
-        }
+        this.result = await this.storageInst.methods.getAllBoardsUnExpir().call()
+        // const boardIndex = this.result.findIndex((board) => board.id === this.target_post_id)
+        // if (boardIndex !== -1) {
+        //   this.result[boardIndex].totalAmount += this.amount
+        // }
       } catch (error) {
         console.log(error)
         console.log('Donate Fail')
@@ -142,12 +164,13 @@ export default {
 
   async mounted() {
     // get web3 instance
-    await Web3Service.getInstance().getCurrentConnectedAccount()
-    this.account = Web3Service.getInstance().account
-    this.storageInst = Web3Service.getInstance().getStorageContract()
-    this.tokenInst = Web3Service.getInstance().getTokenContract()
-    this.result = await this.storageInst.methods.getAllBoardsUnExpir().call()
-    console.log(this.result)
+    // await Web3Service.getInstance().getCurrentConnectedAccount()
+    // this.account = Web3Service.getInstance().account
+    if (this.account !== '') {
+      this.storageInst = Web3Service.getInstance().getStorageContract()
+      this.tokenInst = Web3Service.getInstance().getTokenContract()
+      this.result = await this.storageInst.methods.getAllBoardsUnExpir().call()
+    }
   }
 }
 </script>

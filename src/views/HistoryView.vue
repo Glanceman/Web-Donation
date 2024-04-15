@@ -44,10 +44,13 @@
 <script>
 import Web3Service from '@/web3Service'
 export default {
+  props: {
+    account: String
+  },
   data() {
     return {
       tabPosition: 'post',
-      account: null,
+      /*account: null,*/
       posts: [],
       donatedRecords: [],
       storageInst: null,
@@ -94,14 +97,29 @@ export default {
       ]
     }
   },
+  watch: {
+    async account(newVal, oldVal) {
+      console.log('account change:', newVal)
+      if (newVal === '') {
+        this.posts = []
+        this.donatedRecords = []
+        this.storageInst = null
+        return
+      }
+      this.storageInst = Web3Service.getInstance().getStorageContract()
+      this.posts = await this.storageInst.methods.getBoardsByAddr(this.account).call()
+      this.donatedRecords = await this.storageInst.methods.getDonatorInfoByAddr(this.account).call()
+    }
+  },
+
   methods: {},
 
   async mounted() {
-    await Web3Service.getInstance().getCurrentConnectedAccount()
-    this.storageInst = Web3Service.getInstance().getStorageContract()
-    this.account = Web3Service.getInstance().account
-    this.posts = await this.storageInst.methods.getBoardsByAddr(this.account).call()
-    this.donatedRecords = await this.storageInst.methods.getDonatorInfoByAddr(this.account).call()
+    if (this.account !== '') {
+      this.storageInst = Web3Service.getInstance().getStorageContract()
+      this.posts = await this.storageInst.methods.getBoardsByAddr(this.account).call()
+      this.donatedRecords = await this.storageInst.methods.getDonatorInfoByAddr(this.account).call()
+    }
     console.log('boards: ', this.posts)
     console.log('donatedRecord: ', this.donatedRecords)
   }
