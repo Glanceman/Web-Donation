@@ -5,8 +5,8 @@
   </el-radio-group>
 
   <div>
-    <el-space fill style="width: 100%" direction="vertical">
-      <template v-if="tabPosition === 'post'">
+    <div v-if="tabPosition === 'post'">
+      <el-space fill style="width: 100%" direction="vertical">
         <h1 v-show="posts.length == 0">Empty</h1>
         <el-card v-for="post in posts" shadow="hover">
           <template #header>
@@ -18,14 +18,32 @@
           <el-descriptions title="User Info">
             <el-descriptions-item label="Host name">{{ post.hostname }}</el-descriptions-item>
             <el-descriptions-item label="Host address">{{ post.host }}</el-descriptions-item>
-            <el-descriptions-item label="Target amount">{{
-              post.targetAmount
-            }}</el-descriptions-item>
+            <el-descriptions-item label="Target amount"
+              >{{ post.targetAmount }}PPC</el-descriptions-item
+            >
           </el-descriptions>
+          <el-collapse @change="(val) => handleChange(val, post.id)">
+            <el-collapse-item title="Donator" name="Donator">
+              <div v-for="donator in donators.get(post.id)">
+                <el-descriptions>
+                  <el-descriptions-item label="Name">{{ donator.name }}</el-descriptions-item>
+                  <el-descriptions-item label="Address">{{
+                    donator.donator_addr
+                  }}</el-descriptions-item>
+                  <el-descriptions-item label="Amount"
+                    >{{ donator.amount }}PPC</el-descriptions-item
+                  >
+                </el-descriptions>
+              </div>
+            </el-collapse-item>
+          </el-collapse>
           <template #footer>Total Amount: {{ post.totalAmount }} PPC</template>
         </el-card>
-      </template>
-      <template v-if="tabPosition === 'donate'">
+      </el-space>
+    </div>
+
+    <div v-if="tabPosition === 'donate'">
+      <el-space fill style="width: 100%" direction="vertical">
         <h1 v-show="donatedRecords.length == 0">Empty</h1>
         <el-card v-for="record in donatedRecords" shadow="hover">
           <el-descriptions>
@@ -37,8 +55,8 @@
           </el-descriptions>
           <template #footer>Donated Amount: {{ record.amount }} PPC</template>
         </el-card>
-      </template>
-    </el-space>
+      </el-space>
+    </div>
   </div>
 </template>
 <script>
@@ -54,7 +72,7 @@ export default {
       posts: [],
       donatedRecords: [],
       storageInst: null,
-
+      donators: new Map()
       /*
       fakeposts: [
         // will be deleted later
@@ -68,18 +86,7 @@ export default {
           totalAmount: 123456,
           expire: true
         },
-        {
-          id: 123,
-          name: 'name',
-          context: 'context',
-          host: '0x123456789123456789123456789123456789',
-          hostname: 'abc',
-          targetAmount: 123456,
-          totalAmount: 123456,
-          expire: true
-        }
       ]
-      */
       fakeRecords: [
         // will be deleted later
         {
@@ -88,13 +95,7 @@ export default {
           donator_addr: '0x123456789123456789123456789123456789',
           amount: 123456
         },
-        {
-          targetId: 124,
-          name: 'name',
-          donator_addr: '0x123456789123456789123456789123456789',
-          amount: 123456
-        }
-      ]
+      */
     }
   },
   watch: {
@@ -112,7 +113,23 @@ export default {
     }
   },
 
-  methods: {},
+  methods: {
+    async handleChange(val, post_id) {
+      console.log(val)
+      if (val.includes('Donator')) {
+        // open
+        console.log(post_id)
+        let res = await this.storageInst.methods.getDonatorInBoard(post_id).call()
+        console.log(res)
+        let bset = this.donators.set(post_id, res)
+        console.log(bset)
+      } else {
+        //close
+        let dres = this.donators.delete(post_id)
+        console.log(dres)
+      }
+    }
+  },
 
   async mounted() {
     if (this.account !== '') {
